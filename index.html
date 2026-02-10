@@ -1,263 +1,149 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>2026 春节倒计时·炫酷加强版</title>
-<style>
-  :root{
-    --bg1:#080A1A;
-    --bg2:#310C28;
-    --accent:#FFD54A;
-  }
-  html,body{
-    margin:0;height:100%;overflow:hidden;
-    background:radial-gradient(circle at center,var(--bg2),var(--bg1) 80%);
-    font-family:"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
-  }
-  #fireworks{
-    position:absolute;inset:0;z-index:1;pointer-events:none;
-  }
-  .stage{
-    position:relative;z-index:10;height:100vh;width:100%;
-    display:flex;flex-direction:column;align-items:center;justify-content:center;
-    text-align:center;color:#fff;pointer-events:none;
-  }
-  .title{font-size:42px;font-weight:900;color:var(--accent);margin-bottom:8px;}
-  .subtitle{opacity:.9;margin-bottom:28px;}
-  .countdown{
-    display:flex;gap:20px;padding:18px 22px;
-    background:rgba(255,255,255,0.09);
-    border-radius:18px;backdrop-filter:blur(6px);
-  }
-  .unit{min-width:100px;text-align:center;}
-  .num{font-size:42px;font-weight:900;}
-  .label{margin-top:4px;font-size:13px;opacity:.8;}
+  <meta charset="UTF-8" />
+  <title>抢红包小游戏</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  .foot{
-    position:absolute;bottom:30px;z-index:20;pointer-events:auto;
-    display:flex;gap:12px;
-  }
-  .btn{
-    padding:12px 20px;background:rgba(255,255,255,0.16);
-    border:none;border-radius:12px;color:#fff;
-    font-size:18px;cursor:pointer;font-weight:600;
-    backdrop-filter:blur(4px);
-  }
-
-  .celebrate{
-    margin-top:22px;padding:14px 24px;border-radius:20px;
-    background:linear-gradient(90deg,#ffda7a,#ff8b8b);
-    font-size:25px;font-weight:900;color:#300;
-    opacity:0;transition:1s;transform:scale(.8);
-  }
-  .celebrate.show{opacity:1;transform:scale(1.1);}
-</style>
-</head>
-<body>
-
-<!-- 烟花画布 -->
-<canvas id="fireworks"></canvas>
-
-<!-- 背景音乐（隐藏） -->
-<audio id="bgm" loop preload="auto">
-  <source src="https://files.catbox.moe/85y7ol.mp3" type="audio/mpeg">
-</audio>
-
-<div class="stage">
-  <div class="title">2026 春节倒计时</div>
-  <div class="subtitle">倒计时至：2026-02-17 00:00:00</div>
-
-  <div class="countdown">
-    <div class="unit"><div class="num" id="days">0</div><div class="label">天</div></div>
-    <div class="unit"><div class="num" id="hours">0</div><div class="label">小时</div></div>
-    <div class="unit"><div class="num" id="minutes">0</div><div class="label">分钟</div></div>
-    <div class="unit"><div class="num" id="seconds">0</div><div class="label">秒</div></div>
-  </div>
-
-  <div class="celebrate" id="celebrate">🎉 新年快乐！万事顺意 🎉</div>
-
-  <div class="foot">
-    <button class="btn" id="btnFire">放烟花！</button>
-    <button class="btn" id="btnAutoFire">持续烟花：OFF</button>
-    <button class="btn" id="btnMusic">音乐：OFF</button>
-  </div>
-</div>
-
-<script>
-// ====== 倒计时 =====================================================
-const target = new Date(2026,1,17,0,0,0);
-function update(){
-  const now = new Date();
-  let diff = target - now;
-  if(diff < 0) diff = 0;
-
-  const d = Math.floor(diff/86400000);
-  const h = Math.floor(diff%86400000 / 3600000);
-  const m = Math.floor(diff%3600000 / 60000);
-  const s = Math.floor(diff%60000 / 1000);
-
-  days.textContent = d;
-  hours.textContent = h.toString().padStart(2,'0');
-  minutes.textContent = m.toString().padStart(2,'0');
-  seconds.textContent = s.toString().padStart(2,'0');
-
-  if(diff === 0){
-    celebrate();
-    clearInterval(timer);
-  }
-}
-const timer = setInterval(update,200);
-update();
-
-
-// ====== 烟花系统 ================================================
-const canvas = document.getElementById('fireworks');
-const ctx = canvas.getContext('2d');
-let W = canvas.width = innerWidth;
-let H = canvas.height = innerHeight;
-addEventListener("resize",()=>{W=canvas.width=innerWidth;H=canvas.height=innerHeight;});
-
-function random(a,b){return Math.random()*(b-a)+a;}
-
-class Particle{
-  constructor(x,y,color,shape){
-    this.x=x; this.y=y;
-    this.color=color;
-    this.alpha=1;
-    this.life=1;
-    this.shape=shape;
-
-    const angle=random(0,Math.PI*2);
-    const speed=random(1.5,6);
-
-    this.vx=Math.cos(angle)*speed;
-    this.vy=Math.sin(angle)*speed;
-  }
-  update(){
-    this.vy+=0.03;
-    this.x+=this.vx;
-    this.y+=this.vy;
-    this.life-=0.015;
-    this.alpha=Math.max(this.life,0);
-  }
-  draw(){
-    ctx.globalAlpha=this.alpha;
-    ctx.fillStyle=this.color;
-
-    if(this.shape==="star"){
-      ctx.beginPath();
-      ctx.arc(this.x,this.y,random(1,3),0,Math.PI*2);
-      ctx.fill();
-    }else if(this.shape==="ring"){
-      ctx.beginPath();
-      ctx.arc(this.x,this.y,2,0,Math.PI*2);
-      ctx.fill();
-    }else{
-      ctx.fillRect(this.x,this.y,2,2);
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
     }
-    ctx.globalAlpha=1;
-  }
-}
 
-const particles=[];
+    body {
+      margin: 0;
+      height: 100vh;
+      background: linear-gradient(135deg, #ff4e50, #f9d423);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
 
-function boom(x,y){
-  const count = random(120,220);
-  const hue = random(0,360);
-  const shapes = ["star","ring","dot"];
-  const shape = shapes[Math.floor(random(0,shapes.length))];
+    .card {
+      width: 320px;
+      background: #fff;
+      border-radius: 16px;
+      padding: 30px 20px;
+      text-align: center;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+      animation: pop 0.6s ease;
+    }
 
-  for(let i=0;i<count;i++){
-    const color = `hsl(${hue+random(-20,20)},100%,65%)`;
-    particles.push(new Particle(x,y,color,shape));
-  }
-}
+    @keyframes pop {
+      from {
+        transform: scale(0.8);
+        opacity: 0;
+      }
+      to {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
 
-// 自动动画
-function animate(){
-  ctx.fillStyle="rgba(0,0,0,0.22)";
-  ctx.fillRect(0,0,W,H);
+    .title {
+      font-size: 24px;
+      font-weight: bold;
+      color: #e53935;
+      margin-bottom: 10px;
+    }
 
-  for(let i=particles.length-1;i>=0;i--){
-    const p=particles[i];
-    p.update(); p.draw();
-    if(p.alpha<=0) particles.splice(i,1);
-  }
-  requestAnimationFrame(animate);
-}
-animate();
+    .subtitle {
+      font-size: 14px;
+      color: #888;
+      margin-bottom: 30px;
+    }
 
+    .money {
+      font-size: 48px;
+      color: #ff4e50;
+      font-weight: bold;
+      margin: 20px 0;
+      min-height: 60px;
+    }
 
-// ====== 手动放烟花 =====================================================
-const btn = document.getElementById("btnFire");
-btn.onclick = ()=>{
-  for(let i=0;i<3;i++){
-    setTimeout(()=>{
-      boom(random(W*0.2,W*0.8), random(H*0.15,H*0.55));
-    }, i*200);
-  }
-};
+    .btn {
+      width: 100%;
+      height: 48px;
+      background: linear-gradient(135deg, #ff4e50, #f44336);
+      border: none;
+      border-radius: 24px;
+      color: #fff;
+      font-size: 16px;
+      cursor: pointer;
+      box-shadow: 0 6px 15px rgba(244, 67, 54, 0.4);
+      transition: all 0.2s ease;
+    }
 
+    .btn:active {
+      transform: scale(0.95);
+    }
 
-// ====== 持续烟花 =====================================================
-let auto = false;
-const autoBtn = document.getElementById("btnAutoFire");
+    .btn:disabled {
+      background: #ccc;
+      box-shadow: none;
+      cursor: not-allowed;
+    }
 
-let autoTimer = null;
-autoBtn.onclick = ()=>{
-  auto = !auto;
-  autoBtn.textContent = auto ? "持续烟花：ON" : "持续烟花：OFF";
+    .count {
+      margin-top: 16px;
+      font-size: 13px;
+      color: #666;
+    }
 
-  if(auto){
-    autoTimer = setInterval(()=>{
-      boom(random(W*0.2,W*0.8), random(H*0.15,H*0.55));
-    }, 500);
-  }else{
-    clearInterval(autoTimer);
-  }
-};
+    .shake {
+      animation: shake 0.4s;
+    }
 
+    @keyframes shake {
+      0% { transform: translateX(0); }
+      25% { transform: translateX(-6px); }
+      50% { transform: translateX(6px); }
+      75% { transform: translateX(-6px); }
+      100% { transform: translateX(0); }
+    }
+  </style>
+</head>
 
-// ====== 新年自动连爆 =====================================================
-function celebrate(){
-  const el = document.getElementById("celebrate");
-  el.classList.add("show");
+<body>
+  <div class="card" id="card">
+    <div class="title">🎁 新年红包</div>
+    <div class="subtitle">点击按钮，试试你的手气</div>
 
-  for(let i=0;i<8;i++){
-    setTimeout(()=>{
-      boom(random(W*0.2,W*0.8), H*0.3);
-    }, i*300);
-  }
-}
+    <div class="money" id="money">--</div>
 
+    <button class="btn" id="btn">立即抢红包</button>
 
-// ====== 背景音乐控制 =================================================
-const music = document.getElementById("bgm");
-const musicBtn = document.getElementById("btnMusic");
+    <div class="count" id="count">剩余次数：3</div>
+  </div>
 
-music.volume = 0.3;
+  <script>
+    const btn = document.getElementById("btn");
+    const moneyEl = document.getElementById("money");
+    const countEl = document.getElementById("count");
+    const card = document.getElementById("card");
 
-let musicAllowed = false;
-document.addEventListener("click", () => {
-  musicAllowed = true;
-}, { once:true });
+    let chances = 3;
 
-let musicOn = false;
-musicBtn.onclick = () => {
-  if(!musicAllowed){
-    musicAllowed = true;
-  }
+    btn.addEventListener("click", () => {
+      if (chances <= 0) return;
 
-  musicOn = !musicOn;
-  if (musicOn) {
-    music.play().catch(()=>{});
-    musicBtn.textContent = "音乐：ON";
-  } else {
-    music.pause();
-    musicBtn.textContent = "音乐：OFF";
-  }
-};
-</script>
+      chances--;
+
+      card.classList.remove("shake");
+      void card.offsetWidth; // 强制重绘
+      card.classList.add("shake");
+
+      const amount = (Math.random() * 20 + 0.1).toFixed(2);
+      moneyEl.textContent = `￥${amount}`;
+
+      countEl.textContent = `剩余次数：${chances}`;
+
+      if (chances === 0) {
+        btn.textContent = "红包已抢完";
+        btn.disabled = true;
+      }
+    });
+  </script>
 </body>
-</html>%                                   
+</html>
