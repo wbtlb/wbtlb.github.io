@@ -1,149 +1,160 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8" />
-  <title>抢红包小游戏</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <style>
-    * {
-      box-sizing: border-box;
-      font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
-    }
-
-    body {
-      margin: 0;
-      height: 100vh;
-      background: linear-gradient(135deg, #ff4e50, #f9d423);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .card {
-      width: 320px;
-      background: #fff;
-      border-radius: 16px;
-      padding: 30px 20px;
-      text-align: center;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-      animation: pop 0.6s ease;
-    }
-
-    @keyframes pop {
-      from {
-        transform: scale(0.8);
-        opacity: 0;
-      }
-      to {
-        transform: scale(1);
-        opacity: 1;
-      }
-    }
-
-    .title {
-      font-size: 24px;
-      font-weight: bold;
-      color: #e53935;
-      margin-bottom: 10px;
-    }
-
-    .subtitle {
-      font-size: 14px;
-      color: #888;
-      margin-bottom: 30px;
-    }
-
-    .money {
-      font-size: 48px;
-      color: #ff4e50;
-      font-weight: bold;
-      margin: 20px 0;
-      min-height: 60px;
-    }
-
-    .btn {
-      width: 100%;
-      height: 48px;
-      background: linear-gradient(135deg, #ff4e50, #f44336);
-      border: none;
-      border-radius: 24px;
-      color: #fff;
-      font-size: 16px;
-      cursor: pointer;
-      box-shadow: 0 6px 15px rgba(244, 67, 54, 0.4);
-      transition: all 0.2s ease;
-    }
-
-    .btn:active {
-      transform: scale(0.95);
-    }
-
-    .btn:disabled {
-      background: #ccc;
-      box-shadow: none;
-      cursor: not-allowed;
-    }
-
-    .count {
-      margin-top: 16px;
-      font-size: 13px;
-      color: #666;
-    }
-
-    .shake {
-      animation: shake 0.4s;
-    }
-
-    @keyframes shake {
-      0% { transform: translateX(0); }
-      25% { transform: translateX(-6px); }
-      50% { transform: translateX(6px); }
-      75% { transform: translateX(-6px); }
-      100% { transform: translateX(0); }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MBTI 快速测试</title>
+<style>
+  body {
+    margin: 0;
+    font-family: "PingFang SC","Microsoft YaHei",sans-serif;
+    background: linear-gradient(135deg,#6a11cb,#2575fc);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    color: #fff;
+  }
+  .container {
+    background: rgba(0,0,0,0.7);
+    padding: 30px 20px;
+    border-radius: 16px;
+    width: 360px;
+    text-align: center;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+  }
+  .question {
+    font-size: 18px;
+    margin-bottom: 20px;
+  }
+  .options {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .btn {
+    padding: 10px;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    background: linear-gradient(135deg,#ff6a00,#ee0979);
+    color: #fff;
+    transition: transform 0.2s;
+  }
+  .btn:hover { transform: scale(1.05); }
+  .result {
+    font-size: 22px;
+    font-weight: bold;
+    margin-top: 20px;
+    color: #ffd700;
+  }
+</style>
 </head>
-
 <body>
-  <div class="card" id="card">
-    <div class="title">🎁 新年红包</div>
-    <div class="subtitle">点击按钮，试试你的手气</div>
+<div class="container" id="container">
+  <div class="question" id="question">加载中...</div>
+  <div class="options" id="options"></div>
+</div>
 
-    <div class="money" id="money">--</div>
+<script>
+const questions = [
+  {
+    text: "1. 你更喜欢哪种方式度过周末？",
+    options: [
+      { text: "A. 安静地在家看书/追剧", value: "I" },
+      { text: "B. 和朋友出去玩/聚会", value: "E" }
+    ]
+  },
+  {
+    text: "2. 遇到问题时，你通常依靠？",
+    options: [
+      { text: "A. 逻辑分析和事实", value: "T" },
+      { text: "B. 直觉和情感判断", value: "F" }
+    ]
+  },
+  {
+    text: "3. 你在做计划时偏好？",
+    options: [
+      { text: "A. 先列出详细计划再行动", value: "J" },
+      { text: "B. 灵活即兴，根据情况调整", value: "P" }
+    ]
+  },
+  {
+    text: "4. 当你学习新知识，你更注重？",
+    options: [
+      { text: "A. 实际操作和经验", value: "S" },
+      { text: "B. 理论和概念", value: "N" }
+    ]
+  },
+  {
+    text: "5. 你在社交场合中通常是？",
+    options: [
+      { text: "A. 更喜欢一对一或小圈子交流", value: "I" },
+      { text: "B. 喜欢主动和很多人交流", value: "E" }
+    ]
+  },
+  {
+    text: "6. 决策时，你更倾向于？",
+    options: [
+      { text: "A. 基于逻辑和规则", value: "T" },
+      { text: "B. 考虑他人感受和关系", value: "F" }
+    ]
+  },
+  {
+    text: "7. 工作/生活方式，你更喜欢？",
+    options: [
+      { text: "A. 提前安排和规划", value: "J" },
+      { text: "B. 随机应变，保持灵活", value: "P" }
+    ]
+  },
+  {
+    text: "8. 你更相信哪种方式认识世界？",
+    options: [
+      { text: "A. 通过感官和经验", value: "S" },
+      { text: "B. 通过直觉和灵感", value: "N" }
+    ]
+  }
+];
 
-    <button class="btn" id="btn">立即抢红包</button>
+let current = 0;
+let scores = { E:0,I:0,S:0,N:0,T:0,F:0,J:0,P:0 };
 
-    <div class="count" id="count">剩余次数：3</div>
-  </div>
+const questionEl = document.getElementById("question");
+const optionsEl = document.getElementById("options");
 
-  <script>
-    const btn = document.getElementById("btn");
-    const moneyEl = document.getElementById("money");
-    const countEl = document.getElementById("count");
-    const card = document.getElementById("card");
+function showQuestion() {
+  if (current >= questions.length) {
+    showResult();
+    return;
+  }
+  const q = questions[current];
+  questionEl.textContent = q.text;
+  optionsEl.innerHTML = "";
+  q.options.forEach(opt => {
+    const btn = document.createElement("button");
+    btn.textContent = opt.text;
+    btn.className = "btn";
+    btn.onclick = () => {
+      scores[opt.value]++;
+      current++;
+      showQuestion();
+    };
+    optionsEl.appendChild(btn);
+  });
+}
 
-    let chances = 3;
+function showResult() {
+  const result = 
+    (scores.E >= scores.I ? "E" : "I") +
+    (scores.S >= scores.N ? "S" : "N") +
+    (scores.T >= scores.F ? "T" : "F") +
+    (scores.J >= scores.P ? "J" : "P");
+  questionEl.textContent = "测试完成！你的 MBTI 类型是：";
+  optionsEl.innerHTML = `<div class="result">${result}</div>`;
+}
 
-    btn.addEventListener("click", () => {
-      if (chances <= 0) return;
-
-      chances--;
-
-      card.classList.remove("shake");
-      void card.offsetWidth; // 强制重绘
-      card.classList.add("shake");
-
-      const amount = (Math.random() * 20 + 0.1).toFixed(2);
-      moneyEl.textContent = `￥${amount}`;
-
-      countEl.textContent = `剩余次数：${chances}`;
-
-      if (chances === 0) {
-        btn.textContent = "红包已抢完";
-        btn.disabled = true;
-      }
-    });
-  </script>
+showQuestion();
+</script>
 </body>
 </html>
